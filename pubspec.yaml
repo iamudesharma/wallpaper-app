@@ -23,12 +23,17 @@ environment:
 dependencies:
   cached_network_image: ^3.1.0
   cupertino_icons: ^1.0.2
+  dio: ^4.0.0
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.1.2
   flutter_riverpod: ^0.14.0+3
   http: ^0.13.3
+  image_gallery_saver: ^1.6.9
+  permission_handler: ^8.1.4+2
   pexels_null_safety: ^0.1.2
+  pinch_zoom: ^1.0.0
+  random_string: ^2.3.1
   wallpaper_manager_flutter: ^0.0.2
 
 dev_dependencies:

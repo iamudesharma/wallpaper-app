@@ -1,19 +1,23 @@
-// import 'package:cache_image/cache_image.dart';
-// import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
-
+// import 'dart:html';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:file/src/interface/file.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+// import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:pexels_null_safety/pexels_null_safety.dart';
-
+import 'package:pinch_zoom/pinch_zoom.dart';
 import 'package:wallpaper_app/key.dart';
 import 'package:wallpaper_app/model/wallpaper_model.dart';
 import 'package:wallpaper_app/provider/wallpaper_provider.dart';
 import 'package:wallpaper_app/repository/wallpaper_repository.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
+// import 'package:image_downloader/image_downloader.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   PexelsClient(Api.key).getPhoto().then((value) => print(value?.url));
@@ -48,17 +52,6 @@ class MyHomePage extends ConsumerWidget {
   Widget build(BuildContext context, watch) {
     final data = watch(wallpaperProvider);
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          'Wallpaper App',
-          style: TextStyle(
-            color: Colors.black,
-          ),
-        ),
-        elevation: 0.0,
-        centerTitle: true,
-      ),
       body: data.when(
         data: (data) {
           return WallpaperPage(wallpaper: data!);
@@ -90,54 +83,81 @@ class WallpaperPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-        child: RefreshIndicator(
-      onRefresh: () async {
-        await context.refresh(wallpaperProvider);
-      },
-      child: GridView.builder(
-        itemCount: wallpaper.photos?.length,
-        // shrinkWrap: true,
-
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.5,
-          crossAxisSpacing: 5.0,
-          mainAxisSpacing: 5.0,
-        ),
-        itemBuilder: (context, index) {
-          final _wallpaper = wallpaper.photos?[index];
-          return Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.0),
+      child: RefreshIndicator(
+        onRefresh: () async {
+          await context.refresh(wallpaperProvider);
+        },
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              // pinned: true,
+              // floating: true,
+              centerTitle: true,
+              elevation: 0.0,
+              backgroundColor: Colors.transparent,
+              title: RichText(
+                  text: TextSpan(children: [
+                TextSpan(
+                    text: 'Wallpaper ',
+                    style: TextStyle(
+                      color: Paint().color = Colors.black,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    )),
+                TextSpan(
+                    text: 'Hub',
+                    style: TextStyle(
+                      color: Paint().color = Colors.blue,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800,
+                    ))
+              ])),
             ),
-            height: MediaQuery.of(context).size.height / 2,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => WallpaperPrviewPage(photo: _wallpaper!),
+            SliverGrid(
+              delegate: SliverChildBuilderDelegate((context, int index) {
+                final _wallpaper = wallpaper.photos?[index];
+                return Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  height: MediaQuery.of(context).size.height / 2,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              WallpaperPrviewPage(photo: _wallpaper!),
+                        ),
+                      );
+                    },
+                    child: Hero(
+                      tag: '${_wallpaper?.id}',
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0),
+                        child: CachedNetworkImage(
+                          fit: BoxFit.cover,
+                          imageUrl: _wallpaper!.src!.large!,
+                          filterQuality: FilterQuality.high,
+                          progressIndicatorBuilder: (context, url, progress) =>
+                              Center(child: CircularProgressIndicator()),
+                        ),
+                      ),
+                    ),
                   ),
                 );
-              },
-              child: Hero(
-                tag: '${_wallpaper?.id}',
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: CachedNetworkImage(
-                    fit: BoxFit.cover,
-                    imageUrl: _wallpaper!.src!.medium!,
-                    filterQuality: FilterQuality.high,
-                    progressIndicatorBuilder: (context, url, progress) =>
-                        Center(child: CircularProgressIndicator()),
-                  ),
-                ),
+              }, childCount: wallpaper.photos?.length),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.5,
+                crossAxisSpacing: 5.0,
+                mainAxisSpacing: 5.0,
               ),
-            ),
-          );
-        },
+            )
+          ],
+        ),
       ),
-    ));
+    );
   }
 }
 
@@ -155,13 +175,7 @@ class _WallpaperPrviewPageState extends State<WallpaperPrviewPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<void> setWallpaper(String url, int location) async {
-    // Image url
-
-    File cachedimage =
-        await DefaultCacheManager().getSingleFile(url); //image file
-
-    //Choose screen type
-
+    File cachedimage = await DefaultCacheManager().getSingleFile(url);
     WallpaperManagerFlutter().setwallpaperfromFile(cachedimage, location);
   }
 
@@ -171,37 +185,47 @@ class _WallpaperPrviewPageState extends State<WallpaperPrviewPage> {
     return Scaffold(
       key: scaffoldKey,
       body: SafeArea(
-          child: Stack(
-        children: [
-          Positioned.fill(
-            child: Hero(
-              tag: '${widget.photo.id}',
-              child: CachedNetworkImage(
-                placeholder: (_, value) {
-                  return Center(child: CircularProgressIndicator());
-                },
-                imageUrl: widget.photo.src!.portrait!,
-                fit: BoxFit.cover,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Hero(
+                tag: '${widget.photo.id}',
+                child: PinchZoom(
+                  maxScale: 3.5,
+                  onZoomStart: () {
+                    print('Start zooming');
+                  },
+                  onZoomEnd: () {
+                    print('Stop zooming');
+                  },
+                  child: CachedNetworkImage(
+                    placeholder: (_, value) {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    },
+                    imageUrl: widget.photo.src!.large2X!,
+                    filterQuality: FilterQuality.high,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
             ),
-          ),
-          if (isWallpaperSettings == true)
-            Center(
-              child: CircularProgressIndicator(
-                semanticsLabel: 'Settings',
+            if (isWallpaperSettings == true)
+              Center(
+                child: CircularProgressIndicator(
+                  semanticsLabel: 'Settings',
+                ),
               ),
-            ),
-          Padding(
-            padding: const EdgeInsets.only(
-              bottom: 30.0,
-            ),
-            child: Align(
+            Padding(
+              padding: const EdgeInsets.only(
+                bottom: 30.0,
+              ),
+              child: Align(
                 alignment: Alignment.bottomCenter,
                 // bottom: 0.0,
                 child: GestureDetector(
                   onTap: () async {
-// ScaffoldMessenger.of(context)
-// .
                     scaffoldKey.currentState!.showBottomSheet(
                       (context) => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,9 +234,10 @@ class _WallpaperPrviewPageState extends State<WallpaperPrviewPage> {
                           Applybutton(
                               title: 'Set to Lock screen',
                               onTap: () async {
-                                await setWallpaper(widget.photo.src!.portrait!,
-                                        WallpaperManagerFlutter.LOCK_SCREEN)
-                                    .then((value) {
+                                await setWallpaper(
+                                  widget.photo.src!.portrait!,
+                                  WallpaperManagerFlutter.LOCK_SCREEN,
+                                ).then((value) {
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
@@ -224,32 +249,36 @@ class _WallpaperPrviewPageState extends State<WallpaperPrviewPage> {
                           Applybutton(
                             title: 'Set to Home Screen',
                             onTap: () {
-                              setWallpaper(widget.photo.src!.portrait!,
+                              setWallpaper(widget.photo.src!.large2X!,
                                       WallpaperManagerFlutter.HOME_SCREEN)
-                                  .then((value) {
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Wallpaper Applied'),
-                                  ),
-                                );
-                              });
+                                  .then(
+                                (value) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Wallpaper Applied'),
+                                    ),
+                                  );
+                                },
+                              );
                             },
                           ),
                           Applybutton(
-                            title: 'Set to Lock screen',
+                            title: 'Set to Both',
                             onTap: () {
                               setWallpaper(
                                 widget.photo.src!.portrait!,
                                 WallpaperManagerFlutter.BOTH_SCREENS,
-                              ).then((value) {
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Wallpaper Applied'),
-                                  ),
-                                );
-                              });
+                              ).then(
+                                (value) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Wallpaper Applied'),
+                                    ),
+                                  );
+                                },
+                              );
                             },
                           )
                         ],
@@ -275,17 +304,86 @@ class _WallpaperPrviewPageState extends State<WallpaperPrviewPage> {
                     height: 40,
                     width: MediaQuery.of(context).size.width * 0.6,
                     decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15.0),
-                        color: Colors.black38,
-                        border: Border.all(
-                          color: Colors.white70.withOpacity(0.3),
-                          width: 1.5,
-                        )),
+                      borderRadius: BorderRadius.circular(15.0),
+                      color: Colors.black38,
+                      border: Border.all(
+                        color: Colors.white70.withOpacity(0.3),
+                        width: 1.5,
+                      ),
+                    ),
                   ),
-                )),
-          )
-        ],
-      )),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: SideIcons(
+                // icon: Icons.picture_as_pdf_outlined,
+                icon: Icons.share,
+                onPressed: () {},
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: SideIcons(
+                icon: Icons.download,
+                onPressed: () async {
+                  await _ask();
+                  var response = await Dio().get(widget.photo.src!.original!,
+                      options: Options(responseType: ResponseType.bytes));
+                  final result = await ImageGallerySaver.saveImage(
+                    Uint8List.fromList(response.data),
+                  );
+                  print(result);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Downloaded'),
+                    ),
+                  );
+                  // Navigator.pop(context);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _ask() async {
+    var stautus = await Permission.storage.status;
+    if (stautus.isDenied) {
+      Permission.storage.request();
+    } else {
+      return;
+    }
+  }
+}
+
+class SideIcons extends StatelessWidget {
+  const SideIcons({
+    required this.icon,
+    required this.onPressed,
+    Key? key,
+  }) : super(key: key);
+  final IconData icon;
+  final void Function()? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: 30,
+      backgroundColor: Colors.black38,
+      child: Center(
+        child: IconButton(
+          onPressed: onPressed,
+          icon: Icon(
+            icon,
+            color: Colors.white,
+            size: 30,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -314,8 +412,3 @@ class Applybutton extends StatelessWidget {
     );
   }
 }
-
-// Column(
-//                                 // mainAxisSize: MainAxisSize.min,
-
-                                //                               ),
