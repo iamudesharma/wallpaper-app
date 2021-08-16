@@ -34,6 +34,9 @@ dependencies:
   pexels_null_safety: ^0.1.2
   pinch_zoom: ^1.0.0
   random_string: ^2.3.1
+  # share_plus: ^2.1.4
+  search_page: ^2.0.0+1
+  share: ^2.0.4
   wallpaper_manager_flutter: ^0.0.2
 
 dev_dependencies:

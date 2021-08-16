@@ -1,7 +1,10 @@
 import 'dart:async';
-// import 'dart:html';
 import 'dart:io';
+import 'package:search_page/search_page.dart';
+// import 'dart:html';
+// import 'dart:math' as math;
 import 'dart:typed_data';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -9,23 +12,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:pexels_null_safety/pexels_null_safety.dart';
-import 'package:pinch_zoom/pinch_zoom.dart';
-import 'package:wallpaper_app/key.dart';
-import 'package:wallpaper_app/model/wallpaper_model.dart';
-import 'package:wallpaper_app/provider/wallpaper_provider.dart';
-import 'package:wallpaper_app/repository/wallpaper_repository.dart';
-import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 // import 'package:image_downloader/image_downloader.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pinch_zoom/pinch_zoom.dart';
+// import 'package:wallpaper_app/key.dart';
+import 'package:wallpaper_app/model/wallpaper_model.dart';
+import 'package:wallpaper_app/provider/wallpaper_provider.dart';
+import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 
 void main() async {
-  PexelsClient(Api.key).getPhoto().then((value) => print(value?.url));
-  await Repository.getWallpaper().then(
-    (value) => print(
-      value!.photos?.elementAt(0).id,
-    ),
-  );
+  // PexelsClient(Api.key).getPhoto().then((value) => print(value?.url));
+
+  // await Repository.getWallpaper().then(
+  //   (value) => print(
+  //     value!.photos?.elementAt(0).id,
+  //   ),
+  // );
   runApp(
     ProviderScope(
       child: MyApp(),
@@ -85,11 +87,55 @@ class WallpaperPage extends StatelessWidget {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {
+          context.refresh(intProvider);
+
+          context.read(intProvider);
           await context.refresh(wallpaperProvider);
         },
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
+              actions: [
+                IconButton(
+                  onPressed: () => showSearch(
+                    context: context,
+                    delegate: SearchPage<Photo>(
+                      items: wallpaper.photos!,
+                      searchLabel: 'Search people',
+                      suggestion: Center(
+                        child: Text('Filter people by name, surname or age'),
+                      ),
+                      failure: Center(
+                        child: Text('No person found :('),
+                      ),
+                      filter: (person) => [
+                        person.photographer,
+                        person.id.toString(),
+                        person.photographerId.toString(),
+                      ],
+                      builder: (person) => Container(
+                        height: MediaQuery.of(context).size.height / 2,
+                        width: MediaQuery.of(context).size.width,
+                        child: SingleChildScrollView(
+                          child: Container(
+                            height: 250,
+                            width: 250,
+                            child: Image.network(
+                              person.src!.medium!,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  icon: Icon(
+                    Icons.search,
+                    color: Colors.blue,
+                    size: 30,
+                  ),
+                ),
+              ],
               // pinned: true,
               // floating: true,
               centerTitle: true,
@@ -320,7 +366,9 @@ class _WallpaperPrviewPageState extends State<WallpaperPrviewPage> {
               child: SideIcons(
                 // icon: Icons.picture_as_pdf_outlined,
                 icon: Icons.share,
-                onPressed: () {},
+                onPressed: () {
+                  // Share.
+                },
               ),
             ),
             Align(
