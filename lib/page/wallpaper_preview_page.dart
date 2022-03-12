@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:pinch_zoom/pinch_zoom.dart';
 import 'package:share/share.dart';
 import 'package:wallpaper_app/model/wallpaper_model.dart';
@@ -10,7 +9,6 @@ import 'package:wallpaper_app/widgets/apply_button_widget.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 
 class WallpaperPrviewPage extends StatefulWidget {
-  // const WallpaperPrviewPage({Key? key}) : super(key: key);
   final Photo photo;
 
   const WallpaperPrviewPage({Key? key, required this.photo}) : super(key: key);
@@ -22,11 +20,9 @@ class WallpaperPrviewPage extends StatefulWidget {
 class _WallpaperPrviewPageState extends State<WallpaperPrviewPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  // SystemChrome.setEnabledSystemUIOverlays(overlays);
   @override
   void initState() {
     super.initState();
-    // SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
   }
 
   bool isWallpaperSettings = false;

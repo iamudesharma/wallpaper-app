@@ -1,10 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pexels_null_safety/pexels_null_safety.dart';
-import 'package:search_page/search_page.dart';
-import 'package:wallpaper_app/key.dart';
+
 import 'package:wallpaper_app/model/wallpaper_model.dart';
+import 'package:wallpaper_app/page/search_page.dart';
 import 'package:wallpaper_app/page/wallpaper_preview_page.dart';
 import 'package:wallpaper_app/provider/wallpaper_provider.dart';
 
@@ -30,68 +29,41 @@ class WallpaperPage extends StatelessWidget {
             SliverAppBar(
               actions: [
                 IconButton(
-                  onPressed: () => showSearch(
-                    context: context,
-                    delegate: SearchPage<Photo>(
-                      items: wallpaper.photos!,
-                      searchLabel: 'Search people',
-                      suggestion: Center(
-                        child: Text('Filter people by name, surname or age'),
-                      ),
-                      failure: Center(
-                        child: Text('No person found :('),
-                      ),
-                      filter: (person) => [
-                        // PexelsClient(Api.key).getPhoto(id: person.id),
-                        person.photographer,
-                        person.id.toString(),
-                        person.photographerId.toString(),
-                      ],
-                      builder: (person) => Container(
-                        height: MediaQuery.of(context).size.height / 2,
-                        width: MediaQuery.of(context).size.width,
-                        child: SingleChildScrollView(
-                          child: Container(
-                            height: 250,
-                            width: 250,
-                            child: Image.network(
-                              person.src!.medium!,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
                   icon: Icon(
                     Icons.search,
                     color: Colors.blue,
                     size: 30,
                   ),
+                  onPressed: () => showSearch(
+                    context: context,
+                    delegate: CustomSearchDelegate(),
+                  ),
                 ),
               ],
-              // pinned: true,
-              // floating: true,
               centerTitle: true,
               elevation: 0.0,
               backgroundColor: Colors.transparent,
               title: RichText(
-                  text: TextSpan(children: [
-                TextSpan(
-                    text: 'Wallpaper ',
-                    style: TextStyle(
-                      color: Paint().color = Colors.black,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    )),
-                TextSpan(
-                    text: 'Hub',
-                    style: TextStyle(
-                      color: Paint().color = Colors.blue,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800,
-                    ))
-              ])),
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                        text: 'Wallpaper ',
+                        style: TextStyle(
+                          color: Paint().color = Colors.black,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                        )),
+                    TextSpan(
+                      text: 'App',
+                      style: TextStyle(
+                        color: Paint().color = Colors.blue,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             SliverGrid(
               delegate: SliverChildBuilderDelegate((context, int index) {
@@ -133,7 +105,7 @@ class WallpaperPage extends StatelessWidget {
                 crossAxisSpacing: 5.0,
                 mainAxisSpacing: 5.0,
               ),
-            )
+            ),
           ],
         ),
       ),
