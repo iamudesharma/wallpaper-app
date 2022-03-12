@@ -47,3 +47,5 @@ app.*.map.json
 
 key.dart
 /linux
+web/
+windows/
