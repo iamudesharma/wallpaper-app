@@ -3,7 +3,7 @@ import 'package:wallpaper_app/key.dart';
 import 'package:wallpaper_app/model/wallpaper_model.dart';
 
 class Repository {
-  static Future<Wallpaper?> getWallpaper(int page) async {
+  static Future<WallpaperModel?> getWallpaper(int page) async {
     String url = 'https://api.pexels.com/v1/curated?page=$page&per_page=60';
     http.Response response = await http.get(Uri.parse(url), headers: {
       "Authorization": "${Api.key}",
@@ -29,9 +29,7 @@ class Repository {
     }
   }
 
-
-
-   static Future<Wallpaper?> getSeacrh(String query) async {
+  static Future<WallpaperModel?> getSeacrh(String query) async {
     String url = 'https://api.pexels.com/v1/search?query=$query&per_page=10';
     http.Response response = await http.get(Uri.parse(url), headers: {
       "Authorization": "${Api.key}",
@@ -53,7 +51,9 @@ class Repository {
         return wallpaper;
       }
     } catch (e) {
-      throw 'wallpaper not found';
+      // throw 'wallpaper not found';
+      return null;
     }
+    // return null;
   }
 }

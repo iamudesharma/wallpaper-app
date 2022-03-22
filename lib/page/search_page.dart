@@ -40,7 +40,7 @@ class CustomSearchDelegate extends SearchDelegate {
             future: Repository.getSeacrh(query),
             // initialData: InitialData,
             builder:
-                (BuildContext context, AsyncSnapshot<Wallpaper?> snapshot) {
+                (BuildContext context, AsyncSnapshot<WallpaperModel?> snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 if (snapshot.hasData) {
                   final _data = snapshot.data?.photos;

@@ -12,7 +12,7 @@ class SideIcons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-      radius: 30,
+      radius: 20,
       backgroundColor: Colors.black38,
       child: Center(
         child: IconButton(
@@ -20,7 +20,7 @@ class SideIcons extends StatelessWidget {
           icon: Icon(
             icon,
             color: Colors.white,
-            size: 30,
+            size: 20,
           ),
         ),
       ),

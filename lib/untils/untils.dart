@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -22,7 +21,7 @@ class Untils {
     WallpaperManagerFlutter().setwallpaperfromFile(cachedimage, location);
   }
 
-  static ask() async {
+  static askstoragePermission() async {
     var stautus = await Permission.storage.status;
     if (stautus.isDenied) {
       Permission.storage.request();

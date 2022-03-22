@@ -56,15 +56,9 @@ class _WallpaperPrviewPageState extends State<WallpaperPrviewPage> {
               ),
             ),
           ),
-          if (isWallpaperSettings == true)
-            Center(
-              child: CircularProgressIndicator(
-                semanticsLabel: 'Settings',
-              ),
-            ),
           Padding(
             padding: const EdgeInsets.only(
-              bottom: 30.0,
+              bottom: 10.0,
             ),
             child: Align(
               alignment: Alignment.bottomCenter,
@@ -147,27 +141,39 @@ class _WallpaperPrviewPageState extends State<WallpaperPrviewPage> {
               ),
             ),
           ),
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: SideIcons(
-              // icon: Icons.picture_as_pdf_outlined,
-              icon: Icons.share,
-              onPressed: () {
-                // Share.
-                Share.share(widget.photo.url!);
-              },
+          Padding(
+            padding: const EdgeInsets.only(
+              bottom: 10,
+              left: 10,
+            ),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: SideIcons(
+                // icon: Icons.picture_as_pdf_outlined,
+                icon: Icons.share,
+                onPressed: () {
+                  // Share.
+                  Share.share(widget.photo.url!);
+                },
+              ),
             ),
           ),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: SideIcons(
-              icon: Icons.download,
-              onPressed: () async {
-                await Untils.ask();
-                Untils.imageDownload(widget.photo.src!.original!);
+          Padding(
+            padding: const EdgeInsets.only(
+              bottom: 10,
+              right: 10,
+            ),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: SideIcons(
+                icon: Icons.download,
+                onPressed: () async {
+                  await Untils.askstoragePermission();
+                  Untils.imageDownload(widget.photo.src!.original!);
 
-                Untils.snackBar('Downloaded', context);
-              },
+                  Untils.snackBar('Downloaded', context);
+                },
+              ),
             ),
           ),
         ],

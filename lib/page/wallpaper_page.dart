@@ -8,7 +8,7 @@ import 'package:wallpaper_app/page/wallpaper_preview_page.dart';
 import 'package:wallpaper_app/provider/wallpaper_provider.dart';
 
 class WallpaperPage extends StatelessWidget {
-  final Wallpaper wallpaper;
+  final WallpaperModel wallpaper;
   const WallpaperPage({
     Key? key,
     required this.wallpaper,
@@ -19,9 +19,9 @@ class WallpaperPage extends StatelessWidget {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {
-          context.refresh(intProvider);
+          context.refresh(pageNoProvider);
 
-          context.read(intProvider);
+          context.read(pageNoProvider);
           await context.refresh(wallpaperProvider);
         },
         child: CustomScrollView(
@@ -88,6 +88,7 @@ class WallpaperPage extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10.0),
                         child: CachedNetworkImage(
+                          height: 400,
                           fit: BoxFit.cover,
                           imageUrl: _wallpaper!.src!.large!,
                           filterQuality: FilterQuality.high,
